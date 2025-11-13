@@ -1,0 +1,4 @@
+.point{
+    position: absolute;
+    z-index: 99;
+}
