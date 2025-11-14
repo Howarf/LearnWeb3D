@@ -1,0 +1,51 @@
+name: Deploy Vite Project to GitHub Pages
+
+# main 브랜치에 push 이벤트가 발생할 때 실행
+on:
+  push:
+    branches: [ "main" ] # 본인의 기본 브랜치 이름 (main 또는 master)
+  workflow_dispatch:
+
+# GitHub Actions가 페이지를 배포할 수 있도록 권한 설정
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Node.js 환경 설정
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 원하는 Node.js 버전
+          cache: 'npm'
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 프로젝트 빌드 (Vite는 'dist' 폴더를 생성)
+      - name: Build
+        run: npm run build
+
+      # 5. GitHub Pages 환경 설정
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 6. 빌드 결과물(dist 폴더)을 아티팩트로 업로드
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist' # <-- Vite의 빌드 출력 폴더
+
+      # 7. GitHub Pages에 배포
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
