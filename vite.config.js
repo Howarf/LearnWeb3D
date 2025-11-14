@@ -10,6 +10,7 @@ export default defineConfig({
       },
     }),
   ],
+  base: '/LearnWeb3D/',
   server: {
     port: 3000,
   }
