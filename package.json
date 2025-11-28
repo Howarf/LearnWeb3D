@@ -16,6 +16,7 @@
     "@react-three/postprocessing": "^3.0.4",
     "@react-three/rapier": "^2.1.0",
     "@studio-freight/lenis": "^1.0.42",
+    "@supabase/supabase-js": "^2.86.0",
     "antd": "^5.20.5",
     "ecctrl": "^1.0.30",
     "gltfjsx": "^6.5.2",

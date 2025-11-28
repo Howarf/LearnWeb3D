@@ -18,7 +18,7 @@ import './App.css';
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
       <div className='App'>
           <Menu/>
           <Routes>
