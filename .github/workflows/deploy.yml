@@ -34,6 +34,9 @@ jobs:
       # 4. 프로젝트 빌드 (Vite는 'dist' 폴더를 생성)
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
 
       # 5. GitHub Pages 환경 설정
       - name: Setup Pages
