@@ -76,6 +76,7 @@ export default function Menu(){
                         <Link to={'/SimpleArkanoid'}><li>간단한 공튀기기</li></Link>
                         <Link to={'/CharacterMove'}><li>케릭터 컨트롤</li></Link>
                         <Link to={'/MyPhysics'}><li>테스트공간</li></Link>
+                        <Link to={'/RollTheDice'}><li>주사위 굴리기</li></Link>
                     </ul>
                 </div>
             </div>

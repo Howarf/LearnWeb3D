@@ -15,6 +15,7 @@ import SimplArkanoid from './component/simpleArkanoid';
 import CharacterMove from './component/characterMove';
 import MyPhysics from './component/myPhysics';
 import './App.css';
+import RollTheDice from './component/RollTheDice';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path='/SimpleArkanoid' element={<SimplArkanoid />} />
               <Route path='/CharacterMove' element={<CharacterMove />} />
               <Route path='/MyPhysics' element={<MyPhysics />} />
+              <Route path='/RollTheDice' element={<RollTheDice />} />
           </Routes>
       </div>
   </BrowserRouter>
