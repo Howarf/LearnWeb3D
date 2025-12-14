@@ -1,4 +1,12 @@
 .controllPad{
     position: absolute;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.controllPad button{
+    width: 100px;
+}
+.controllPad p{
+    color: black;
 }
