@@ -1,20 +1,20 @@
 a{
   text-decoration-line: none;
-  color: #212125;
+  color: #A3DE83;
 }
 .menu{
     width: 15%;
     height: 100vh;
-    background-color: #A3DE83;
+    background-color: #1a1a1a;
     display: flex;
     position: absolute;
     left: -15%;
     z-index: 999;
+    box-shadow: 0px 0px 10px -2px #A3DE83;
 }
 .menuBtn{
     width: 60px;
     height: 60px;
-    background-color: #239D60;
     position: absolute;
     right: -60px;
     bottom: 0;
@@ -25,22 +25,25 @@ a{
     transition: .5s ease-in-out;
     cursor: pointer;
 }
+.menuBtn:hover{
+    box-shadow: 1px 0px 10px -1px #90ee90;
+}
 #opne span, #close span{
     width: 40px;
     height: 7px;
     display: block;
     position: absolute;
     border-radius: 7px;
-    background-color: #F7F39A;
+    background-color: #A3DE83;
     display: block;
     opacity: 1;
     transform: rotate(0deg);
     -webkit-transform: rotate(0deg);
     -moz-transform: rotate(0deg);
     -o-transform: rotate(0deg);
-    -webkit-transition: .5s ease-in-out;
-    -moz-transition: .5s ease-in-out;
-    -o-transition: .5s ease-in-out;
+    -webkit-transition: .25s ease-in-out;
+    -moz-transition: .25s ease-in-out;
+    -o-transition: .25s ease-in-out;
     transition: .25s ease-in-out;
 }
 .menuBtn span:nth-child(1) {top: 12px;}  
@@ -55,7 +58,7 @@ a{
 }
 #close span:nth-child(2) {
     opacity: 0;
-    left: -60px;
+    left: 60px;
 }
 #close span:nth-child(3) {
     top: 25px;
@@ -85,6 +88,7 @@ a{
     display: flex;
     align-items: center;
     cursor: pointer;
+    color: #A3DE83;
 }
 .listBtn1{
     width: 100%;
@@ -92,7 +96,7 @@ a{
 }
 .menuList1{
     width: 100%;
-    display: none;
+    display: flex;
     flex-direction: column;
 }
 .menuList1 a{

@@ -12,10 +12,11 @@ import HTML_annotations from './component/HTML_annotations';
 import Simple_physics1 from './component/Simple_physics1';
 import TriggerMesh from './component/TriggerMesh';
 import SimplArkanoid from './component/simpleArkanoid';
-import CharacterMove from './component/characterMove';
+import CollisionEvent from './component/collisionEvent';
 import MyPhysics from './component/myPhysics';
-import './App.css';
 import RollTheDice from './component/RollTheDice';
+import FlowCamera from './component/flowCamera';
+import './App.css';
 
 function App() {
   return (
@@ -35,9 +36,10 @@ function App() {
               <Route path='/SimplPhysics1' element={<Simple_physics1 />} />
               <Route path='/TriggerEvent' element={<TriggerMesh />} />
               <Route path='/SimpleArkanoid' element={<SimplArkanoid />} />
-              <Route path='/CharacterMove' element={<CharacterMove />} />
+              <Route path='/CollisionEvent' element={<CollisionEvent />} />
               <Route path='/MyPhysics' element={<MyPhysics />} />
               <Route path='/RollTheDice' element={<RollTheDice />} />
+              <Route path='/FlowCamera' element={<FlowCamera />} />
           </Routes>
       </div>
   </BrowserRouter>
