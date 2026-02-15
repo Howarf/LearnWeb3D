@@ -17,6 +17,7 @@ import MyPhysics from './component/myPhysics';
 import RollTheDice from './component/RollTheDice';
 import FlowCamera from './component/flowCamera';
 import './App.css';
+import YachtDice from './component/YachtDice';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path='/MyPhysics' element={<MyPhysics />} />
               <Route path='/RollTheDice' element={<RollTheDice />} />
               <Route path='/FlowCamera' element={<FlowCamera />} />
+              <Route path='/YachtDice' element={<YachtDice />} />
           </Routes>
       </div>
   </BrowserRouter>
