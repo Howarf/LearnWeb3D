@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Physics, RigidBody, MeshCollider } from "@react-three/rapier";
 import { getModelUrl } from "../supabaseClient";
 import * as THREE from 'three';
-import styles from "../css/diceControll.module.css";
+import styles from "../css/diceGame.module.css";
 import { useDiceGameStore } from "../stores/useDiceGameStore";
 
 const faces = [
@@ -17,7 +17,7 @@ const faces = [
 ]
 
 function Dice({index, ...props}){
-    const { nodes, materials, scene } = useGLTF(getModelUrl('D6.glb'));
+    const { scene } = useGLTF(getModelUrl('D6.glb'));
     const clonedScene = useMemo(() => scene.clone(), [scene]);
     const rigidRef = useRef();
     const rollTrigger = useDiceGameStore((state) => state.rollTrigger);

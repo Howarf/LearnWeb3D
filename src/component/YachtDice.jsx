@@ -1,11 +1,11 @@
-import { Environment, useGLTF } from '@react-three/drei'
+import { Bounds, Environment, Html, useGLTF, useProgress } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { MeshCollider, Physics, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { getModelUrl } from '../supabaseClient'
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, Suspense } from 'react'
 import { GAME_STATE, useDiceGameStore } from '../stores/useDiceGameStore'
-import styles from "../css/diceControll.module.css"
+import styles from "../css/diceGame.module.css"
 
 const faces = [
     { dir: new THREE.Vector3(0, 1, 0), value: 1 },
@@ -32,11 +32,11 @@ function Dice({index, ...props}){
     const keeps = useDiceGameStore((state) => state.keeps)
     const toggleKeep = useDiceGameStore((state) => state.toggleKeep)
     const setDiceResult = useDiceGameStore((state) => state.setDiceResult)
-    const setReady = useDiceGameStore((state) => state.setReady)
     const isFixed = keeps.some(k => k.originalIndex === index)
     const keepOrderIndex = keeps.findIndex(k => k.originalIndex === index)
     const [physicsType, setPhysicsType] = useState("dynamic")
     const [savedRot, setSaveRot] = useState(new THREE.Quaternion())
+    const [hovered, setHovered] = useState(false)
     const spacing = 2.0
     const angle = (index / 5) * Math.PI * 2
     const radius = 0.4
@@ -50,15 +50,36 @@ function Dice({index, ...props}){
     const glassOffset = useMemo(() => new THREE.Vector3((Math.random() - 0.5) * 1, 0, (Math.random() - 0.5) * 1), [])
     useEffect(() => {
         clonedScene.traverse((child) => {
-            if(child.isMesh){ child.castShadow = true; child.receiveShadow = true; }
+            if(child.isMesh){
+                child.castShadow = true
+                child.receiveShadow = true
+            }
         })
     }, [clonedScene])
+
+    useEffect(()=> {
+        document.body.style.cursor = (hovered && gameState === GAME_STATE.ENDED) ? 'pointer' : 'auto'
+        return () => { document.body.style.cursor = 'auto' }
+    }, [hovered])
+
     useEffect(() => {
-        if(gameState === GAME_STATE.READY && !isFixed && rigidRef.current){
+        if(gameState === GAME_STATE.GAME_OVER && rigidRef.current){
+            rigidRef.current.setTranslation({
+                x: props.position[0], 
+                y: props.position[1] - 4, 
+                z: props.position[2]
+            }, true)
+            rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
+            rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
+            setTimeout(() => {
+                setPhysicsType("dynamic")
+            }, 100)
+            rigidRef.current.wakeUp()
+        }else if(gameState === GAME_STATE.READY && !isFixed && rigidRef.current){
+            setPhysicsType("dynamic")
             rigidRef.current.setTranslation(glassPos.clone().add(glassOffset), true)
             rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
             rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
-            setPhysicsType("dynamic")
             rigidRef.current.wakeUp()
             setTimeout(() => {
                 if (rigidRef.current && gameState === GAME_STATE.READY) {
@@ -66,52 +87,45 @@ function Dice({index, ...props}){
                     rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
                 }
             }, 50)
-        }
-    }, [gameState, isFixed])
-    useEffect(() => {
-        if(gameState === GAME_STATE.THROWN && !isFixed && rigidRef.current){
+        }else if(gameState === GAME_STATE.THROWN && !isFixed && rigidRef.current){
             setPhysicsType("dynamic")
             rigidRef.current.wakeUp()
             setTimeout(()=>{
                 rigidRef.current.applyImpulse({
-                    x: -20 - Math.random() * 2, 
+                    x: -13 - Math.random() * 2, 
                     y: -2,
                     z: (Math.random() - 0.5) * 2
                 }, true)
                 rigidRef.current.applyTorqueImpulse({
-                    x: Math.random() * 3, y: Math.random() * 3, z: Math.random() * 3
+                    x: Math.random() * 5, y: Math.random() * 5, z: Math.random() * 5
                 }, true)
             }, 200)
+        }else if(gameState === GAME_STATE.ENDED || gameState === GAME_STATE.RETURNING || gameState === GAME_STATE.GAME_OVER){
+            setPhysicsType("kinematicPosition")
         }
     }, [gameState, isFixed])
+
     useFrame(() => {
         if(!rigidRef.current) return
+        const currentPos = rigidRef.current.translation()
+        const curVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z)
+        const curRot = rigidRef.current.rotation()
+        const curQuat = new THREE.Quaternion(curRot.x, curRot.y, curRot.z, curRot.w)
+        if(isFixed){
+            rigidRef.current.setNextKinematicTranslation(curVec.lerp(saveTargetPos, 0.15))
+            rigidRef.current.setNextKinematicRotation(curQuat.slerp(savedRot, 0.1))
+            return
+        }
         if(gameState === GAME_STATE.ENDED){
-            setPhysicsType("kinematicPosition") // 정렬을 위해 물리 끄기
-            const currentPos = rigidRef.current.translation()
-            const curVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z)
-            const curRot = rigidRef.current.rotation()
-            const curQuat = new THREE.Quaternion(curRot.x, curRot.y, curRot.z, curRot.w)
-            
-            const activeTarget = isFixed ? saveTargetPos : resultTargetPos
-            rigidRef.current.setNextKinematicTranslation(curVec.lerp(activeTarget, 0.1))
+            rigidRef.current.setNextKinematicTranslation(curVec.lerp(resultTargetPos, 0.1))
             rigidRef.current.setNextKinematicRotation(curQuat.slerp(savedRot, 0.1))
         }
-        if(gameState === GAME_STATE.RETURNING && !isFixed){
-            setPhysicsType("kinematicPosition")
-            const currentPos = rigidRef.current.translation()
-            const curVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z)
+        else if(gameState === GAME_STATE.RETURNING){
             const target = glassPos.clone().add(glassOffset)
-            
-            rigidRef.current.setNextKinematicTranslation(curVec.lerp(target, 0.09))
-            rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
-            rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
-            
-            if(curVec.distanceTo(target) < 0.2){
-                setReady()
-            }
+            rigidRef.current.setNextKinematicTranslation(curVec.lerp(target, 0.075))
         }
     })
+
     const checkResult = () => {
         if(!rigidRef.current || gameState !== GAME_STATE.THROWN || isFixed) return
         rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
@@ -133,19 +147,29 @@ function Dice({index, ...props}){
             if(dot > maxDot){ maxDot = dot; bestMatch = face.value; }
         })
         setSaveRot(snappedQuat)
-        setDiceResult(index, bestMatch) // 기록
+        setDiceResult(index, bestMatch)
     }
     return(
         <RigidBody 
             ref={rigidRef}
             type={physicsType}
             onSleep={checkResult}
+            restitution={0.25}
+            restitutionCombineRule="max"
             ccd={true}
             {...props}
             onClick={(e) =>{
                 e.stopPropagation()
                 toggleKeep(index)
                 if(rigidRef.current) rigidRef.current.wakeUp()
+            }}
+            onPointerOver={(e) =>{
+                e.stopPropagation()
+                if(gameState === GAME_STATE.ENDED) setHovered(true)
+            }}
+            onPointerOut={(e) =>{
+                e.stopPropagation()
+                if(gameState === GAME_STATE.ENDED) setHovered(false)
             }}
         >
             <primitive object={clonedScene} />
@@ -160,6 +184,8 @@ function Glass(props){
     const startDrag = useDiceGameStore((state) => state.startDrag)
     const throwCup = useDiceGameStore((state) => state.throwCup)
     const gatherDice = useDiceGameStore((state) => state.gatherDice)
+    const rollCount = useDiceGameStore((state) => state.rollCount)
+    const keeps = useDiceGameStore((state) => state.keeps)
     const planeIntersectPoint = useMemo(() => new THREE.Vector3(), [])
     const defualtPos = useMemo(() => new THREE.Vector3(7, 2, 0), [] )
     const uprightQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0))
@@ -180,8 +206,8 @@ function Glass(props){
             const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -dragHeight)
             const intersection = state.raycaster.ray.intersectPlane(plane, planeIntersectPoint)
             if(intersection){
-                const x = THREE.MathUtils.clamp(intersection.x, 2, 12)
-                const z = THREE.MathUtils.clamp(intersection.z, -5, 5)
+                const x = THREE.MathUtils.clamp(intersection.x, 5, 8)
+                const z = THREE.MathUtils.clamp(intersection.z, -3, 3)
                 rigidRef.current.setNextKinematicTranslation(curVec.lerp(new THREE.Vector3(x, dragHeight, z), 0.04))
                 const targetRot = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, state.pointer.x * 0.5))
                 rigidRef.current.setNextKinematicRotation(curQuat.slerp(targetRot, 0.1))
@@ -208,7 +234,19 @@ function Glass(props){
                     object={scene}
                     onPointerDown={(e) => { e.stopPropagation(); if(gameState === GAME_STATE.READY) startDrag(); }}
                     onPointerUp={(e) => { e.stopPropagation(); if(gameState === GAME_STATE.DRAGGING) throwCup(); }}
-                    onClick={(e) => { e.stopPropagation(); if(gameState === GAME_STATE.ENDED) gatherDice(); }}
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        if(gameState === GAME_STATE.ENDED){
+                            if(rollCount === 0) {
+                                alert("굴릴 수 있는 횟수를 다 사용했습니다.\n 점수를 기입해 주세요.")
+                                return
+                            }else if(rollCount > 0 && keeps.length === 5){
+                                alert("굴릴 주사위가 없습니다.")
+                                return
+                            }
+                            gatherDice()
+                        }
+                    }}
                 />
             </MeshCollider>
         </RigidBody>
@@ -245,8 +283,136 @@ function Panel(props){
     )
 }
 
+function calculatePotentialScores(dice){
+    if (dice.includes(null) || dice.length !== 5) return
+    const counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+    let sum = 0
+    dice.forEach(d => {
+        counts[d]++
+        sum += d
+    })
+    const hasCount = (count) => Object.values(counts).some(c => c>= count)
+    const getCounts = () => Object.values(counts).sort((a, b) => b - a)
+    const uniqueDice = [...new Set(dice)].sort((a, b) => a - b)
+    const str = uniqueDice.join('')
+    const smallStraight = str.includes('1234') || str.includes('2345') || str.includes('3456')
+    const largeStraight = str.includes('12345') || str.includes('23456')
+    return{
+        aces: counts[1] * 1,
+        deuces: counts[2] * 2,
+        threes: counts[3] * 3,
+        fours: counts[4] * 4,
+        fives: counts[5] * 5,
+        sixes: counts[6] * 6,
+        choice: sum,
+        fourOfAKind: hasCount(4) ? sum : 0,
+        fullHouse: (getCounts()[0] === 3 && getCounts()[1] === 2) ? sum : 0,
+        smallStraight: smallStraight ? 30 : 0,
+        largeStraight: largeStraight ? 40 : 0,
+        yacht: hasCount(5) ? 50 : 0
+    }
+}
+
+function ScoreBoard() {
+    const scores = useDiceGameStore(state => state.scores)
+    const diceValues = useDiceGameStore(state => state.diceValues)
+    const gameState = useDiceGameStore(state => state.gameState)
+    const recordScore = useDiceGameStore(state => state.recordScore)
+    const player = useDiceGameStore(state => state.player)
+    const currentPlayer = useDiceGameStore(state => state.currentPlayer)
+    const potentialScores = gameState === GAME_STATE.ENDED ? calculatePotentialScores(diceValues) : {}
+    const categories = [
+        { id: 'aces', name: 'Aces' },
+        { id: 'deuces', name: 'Deuces' },
+        { id: 'threes', name: 'Threes' },
+        { id: 'fours', name: 'Fours' },
+        { id: 'fives', name: 'Fives' },
+        { id: 'sixes', name: 'Sixes' },
+        { id: 'choice', name: 'Choice' },
+        { id: 'fourOfAKind', name: '4 of a Kind' },
+        { id: 'fullHouse', name: 'Full House' },
+        { id: 'smallStraight', name: 'S. Straight' },
+        { id: 'largeStraight', name: 'L. Straight' },
+        { id: 'yacht', name: 'Yacht' },
+    ]
+    return(
+        <div style={{ backgroundColor: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)'}}>
+            <h3 style={{ margin: '0 0 10px 0', textAlign: 'center', color: "#000" }}>Score Board</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+                <thead>
+                    <tr>
+                        <th style={{ padding: '5px', borderBottom: '2px solid black', color: "#000" }}>항목</th>
+                        {/* 인원 수만큼 플레이어 열 생성 */}
+                        {Array.from({ length: player }).map((_, i) => (
+                            <th key={i} style={{ 
+                                padding: '5px', borderBottom: '2px solid black',
+                                color: currentPlayer === i ? 'red' : 'black', // 현재 턴인 플레이어 강조
+                                textDecoration: currentPlayer === i ? 'underline' : 'none'
+                            }}>
+                                {i + 1}P
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {categories.map(cat => (
+                        <tr key={cat.id} style={{ borderBottom: '1px solid #000' }}>
+                            <td style={{ padding: '5px', fontWeight: 'bold', color:'#000' }}>{cat.name}</td>
+                            
+                            {scores.map((playerScores, pIdx) => {
+                                const isLocked = playerScores[cat.id] !== null;
+                                const isCurrentTurn = (pIdx === currentPlayer && gameState === GAME_STATE.ENDED);
+                                const potential = potentialScores[cat.id];
+
+                                return (
+                                    <td key={pIdx} style={{ padding: '5px', minWidth: '40px' }}>
+                                        {isLocked ? (
+                                            // 이미 기입된 점수
+                                            <span style={{ fontWeight: 'bold', color: 'black' }}>{playerScores[cat.id]}</span>
+                                        ) : isCurrentTurn ? (
+                                            // 현재 턴 플레이어의 기입 가능한 버튼
+                                            <button 
+                                                onClick={() => recordScore(cat.id, potential)}
+                                                style={{ padding: '2px 8px', cursor: 'pointer', backgroundColor: '#e0f7fa', border: '1px solid #00bcd4', borderRadius: '4px', color: '#008ba3', fontWeight: 'bold' }}
+                                            >
+                                                {potential}
+                                            </button>
+                                        ) : (
+                                            // 빈 칸
+                                            <span style={{ color: '#ccc' }}>-</span>
+                                        )}
+                                    </td>
+                                )
+                            })}
+                        </tr>
+                    ))}
+
+                    {/* 보너스 및 총점 계산 행 */}
+                    <tr style={{ borderTop: '2px solid black' }}>
+                        <td style={{ padding: '5px', fontWeight: 'bold', color: "#000" }}>Bonus (63+)</td>
+                        {scores.map((playerScores, pIdx) => {
+                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0);
+                            const bonus = upperSum >= 63 ? 35 : 0;
+                            return <td key={pIdx} style={{ padding: '5px', fontWeight: 'bold', color: 'gray' }}>{bonus}</td>
+                        })}
+                    </tr>
+                    <tr>
+                        <td style={{ padding: '5px', fontWeight: 'bold', fontSize: '16px', color: "#000" }}>Total</td>
+                        {scores.map((playerScores, pIdx) => {
+                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0);
+                            const bonus = upperSum >= 63 ? 35 : 0;
+                            const totalScore = Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus;
+                            return <td key={pIdx} style={{ padding: '5px', fontWeight: 'bold', fontSize: '16px', color: 'red' }}>{totalScore}</td>
+                        })}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
 function Scene(props){
-    const startDicePosition = [[0, 5, 0], [0, 5, 1], [0, 5, -1], [1, 5, 0], [-1, 5, 0]];
+    const startDicePosition = [[0, 5, 0], [0, 5, 1], [0, 5, -1], [1, 5, 0], [-1, 5, 0]]
     return(
         <>
             <ambientLight color={"white"} intensity={0.5} />
@@ -258,7 +424,7 @@ function Scene(props){
             />
             <Physics gravity={[0, -25, 0]}>
                 <Panel position={[0, 0, 0]}/>
-                <Glass position={[7, 2, 0]} scale={13} />
+                <Glass position={[7, 2, 0]} scale={13.2} />
                 {startDicePosition.map((el, item) => {
                     return(<Dice position={el} scale={1.75} key={item} index={item}/>)
                 })}
@@ -268,27 +434,108 @@ function Scene(props){
     )
 }
 
+function LoadingScreen() {
+    const { progress } = useProgress()
+    return (
+        <div style={{ position: 'absolute', top:0, left:0, width: '100vw', height: '100vh', backgroundColor: '#222', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
+            <h1 style={{ color: 'white', marginBottom: '20px' }}>Loading Game...</h1>
+            <div style={{ width: '300px', height: '20px', backgroundColor: '#555', borderRadius: '10px', overflow: 'hidden' }}>
+                <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#ff5722', transition: 'width 0.2s' }} />
+            </div>
+            <p style={{ color: 'white', marginTop: '10px' }}>{progress.toFixed(0)}%</p>
+        </div>
+    )
+}
+
 export default function YachtDice(){
     const gameState = useDiceGameStore((state) => state.gameState)
-    const diceValues = useDiceGameStore((state) => state.diceValues)
     const rollCount = useDiceGameStore((state) => state.rollCount)
     const startGame = useDiceGameStore((state) => state.startGame)
+    const player = useDiceGameStore((state) => state.player)
+    const currentPlayer = useDiceGameStore((state) => state.currentPlayer)
+    const turn = useDiceGameStore((state) => state.turn)
+    const addPlayer = useDiceGameStore((state) => state.addPlayer)
+    const subtractPlayer = useDiceGameStore((state) => state.subtractPlayer)
+    const resetToMenu = useDiceGameStore((state) => state.resetToMenu)
+    const scores = useDiceGameStore(state => state.scores)
+    const getWinnerText = () => {
+        if (gameState !== GAME_STATE.GAME_OVER) return null;
+        const totalScores = scores.map(playerScores => {
+            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
+            const bonus = upperSum >= 63 ? 35 : 0
+            return Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus
+        })
+        const maxScore = Math.max(...totalScores)
+        const winners = totalScores.map((score, index) => score === maxScore ? index + 1 : null).filter(val => val !== null)
+        if (winners.length > 1) {
+            return (<p>Draw</p>)
+        } else {
+            return (<p>Player{winners[0]} Win! <br/>{maxScore} Score</p>)
+        }
+    }
+
+    const { progress } = useProgress()
+    const isLoading = progress < 100
     
     return(
-        <>
+        <div className={styles.canvas}>
+            {isLoading && <LoadingScreen />}
             <Canvas camera={{ position:[0, 20, 5], fov:50 }} shadows>
-                <Scene />
+                <Suspense fallback={null}>
+                    <Scene />
+                </Suspense>
             </Canvas>
-            <div className={styles.controllPad}>
-                {gameState === "MENU" ? (
-                    <button onClick={startGame}>시작하기</button>
-                    ):(
-                    <>
-                        <p>{JSON.stringify(diceValues)}</p>
-                        <p className={styles.throwCount}>남은 횟수:{rollCount}</p>
-                    </>
-                )}
-            </div>
-        </>
+            {!isLoading && (
+                <>
+                    {gameState === GAME_STATE.GAME_OVER && (
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', color: 'white', textAlign: 'center', zIndex: 50 }}>
+                            <h3 style={{ color: '#ffdd00', fontSize: '28px', margin: '20px 0', textShadow: '0 0 10px rgba(255,221,0,0.5)' }}>
+                                {getWinnerText()}
+                            </h3>
+                            <button onClick={resetToMenu} style={{ padding: '10px 20px', fontSize: '18px', cursor: 'pointer', marginTop: '20px' }}>Reset To Game</button>
+                        </div>
+                    )}
+                    {gameState !== GAME_STATE.MENU && (
+                        <div className={styles.inSceneBoard}>
+                            <ScoreBoard />
+                        </div>
+                    )}
+                    {gameState === "MENU" ? (
+                        <div className={styles.controllPad}>
+                            <h1><span>YACHT</span> Dice</h1>
+                            <div className={styles.playerContainer}>
+                                <h3>player:</h3>
+                                <div className={styles.playerControll}>
+                                    <button className={styles.btn_1} onClick={(e) => { e.stopPropagation(); subtractPlayer();}}>▼</button>
+                                    <p>{player}</p>
+                                    <button className={styles.btn_2} onClick={(e) => { e.stopPropagation(); addPlayer();}}>▲</button>
+                                </div>
+                            </div>
+                            <div className={styles.startBtn} onClick={startGame}>
+                                <p className={styles.btnText}>Ready?</p>
+                                <div className={styles.btnTwo}>
+                                <p className={styles.btnText2}>Go!</p>
+                                </div>
+                            </div>
+                        </div>
+                        ):(
+                        gameState !== "GAME_OVER"?
+                        <div className={styles.uiPad}>
+                            <p className={styles.throwCount}><img src='free-icon-dice.png'/>{rollCount} left</p>
+                            <p className={styles.turnPlayer}>{currentPlayer + 1}<span>P</span>Turn</p>
+                            <p className={styles.turn}>{Math.min(12, turn)}/12</p>
+                            <div className={styles.tip}>
+                                {/* {gameState === GAME_STATE.READY && "컵을 잡아 드래그한 뒤 놓으세요!"}
+                                {gameState === GAME_STATE.ENDED && rollCount > 0 && "주사위를 클릭해 킵(Keep)하고, 컵을 클릭하면 다시 던집니다."}
+                                {gameState === GAME_STATE.ENDED && rollCount === 0 && "더 이상 굴릴 수 없습니다. 점수판을 클릭해 기록하세요!"} */}
+                                <img src='tip-icon.png'/>
+                            </div>
+                        </div>
+                        :(<></>)
+                    )}
+                </>
+            )}
+            
+        </div>
     )
 }
