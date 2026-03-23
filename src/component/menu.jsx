@@ -76,7 +76,7 @@ export default function Menu(){
                         <Link to={'/CollisionEvent'}><li>충돌 이벤트</li></Link>
                         <Link to={'/MyPhysics'}><li>동전 먹기</li></Link>
                         <Link to={'/FlowCamera'}><li>따라가는 카메라</li></Link>
-                        <Link to={'/RollTheDice'}><li>주사위 굴리기</li></Link>
+                        {/* <Link to={'/RollTheDice'}><li>주사위 굴리기</li></Link> */}
                     </ul>
                 </div>
                 <span className={styles.subTitle1} onClick={MenuClick2} name="menu_3">게임</span>
