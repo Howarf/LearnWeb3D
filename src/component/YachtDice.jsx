@@ -154,7 +154,7 @@ function Dice({index, ...props}){
             ref={rigidRef}
             type={physicsType}
             onSleep={checkResult}
-            restitution={0.25}
+            restitution={0.2}
             restitutionCombineRule="max"
             ccd={true}
             {...props}
@@ -206,9 +206,9 @@ function Glass(props){
             const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -dragHeight)
             const intersection = state.raycaster.ray.intersectPlane(plane, planeIntersectPoint)
             if(intersection){
-                const x = THREE.MathUtils.clamp(intersection.x, 5, 8)
-                const z = THREE.MathUtils.clamp(intersection.z, -3, 3)
-                rigidRef.current.setNextKinematicTranslation(curVec.lerp(new THREE.Vector3(x, dragHeight, z), 0.04))
+                const x = THREE.MathUtils.clamp(intersection.x, 4.5, 10)
+                const z = THREE.MathUtils.clamp(intersection.z, -3.5, 3.5)
+                rigidRef.current.setNextKinematicTranslation(curVec.lerp(new THREE.Vector3(x, dragHeight, z), 0.045))
                 const targetRot = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, state.pointer.x * 0.5))
                 rigidRef.current.setNextKinematicRotation(curQuat.slerp(targetRot, 0.1))
             }
@@ -328,6 +328,8 @@ function ScoreBoard() {
         { id: 'fours', name: 'Fours' },
         { id: 'fives', name: 'Fives' },
         { id: 'sixes', name: 'Sixes' },
+    ]
+    const categories2 = [
         { id: 'choice', name: 'Choice' },
         { id: 'fourOfAKind', name: '4 of a Kind' },
         { id: 'fullHouse', name: 'Full House' },
@@ -336,17 +338,15 @@ function ScoreBoard() {
         { id: 'yacht', name: 'Yacht' },
     ]
     return(
-        <div style={{ backgroundColor: 'rgba(255,255,255,0.95)', padding: '15px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)'}}>
-            <h3 style={{ margin: '0 0 10px 0', textAlign: 'center', color: "#000" }}>Score Board</h3>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+        <div className={styles.scoreArea}>
+            <h3 className={styles.scoreBoardTitle}>Score Board</h3>
+            <table className={styles.scoreBoard}>
                 <thead>
                     <tr>
-                        <th style={{ padding: '5px', borderBottom: '2px solid black', color: "#000" }}>항목</th>
-                        {/* 인원 수만큼 플레이어 열 생성 */}
+                        <th className={styles.CategoriColumnTitle}>Categoris</th>
                         {Array.from({ length: player }).map((_, i) => (
-                            <th key={i} style={{ 
-                                padding: '5px', borderBottom: '2px solid black',
-                                color: currentPlayer === i ? 'red' : 'black', // 현재 턴인 플레이어 강조
+                            <th key={i} className={styles.playerColumnTitle} style={{ 
+                                color: currentPlayer === i ? 'red' : 'black',
                                 textDecoration: currentPlayer === i ? 'underline' : 'none'
                             }}>
                                 {i + 1}P
@@ -356,53 +356,75 @@ function ScoreBoard() {
                 </thead>
                 <tbody>
                     {categories.map(cat => (
-                        <tr key={cat.id} style={{ borderBottom: '1px solid #000' }}>
-                            <td style={{ padding: '5px', fontWeight: 'bold', color:'#000' }}>{cat.name}</td>
-                            
+                        <tr className={styles.categorieColumn} key={cat.id}>
+                            <td className={styles.categorieName}>{cat.name}</td>
                             {scores.map((playerScores, pIdx) => {
-                                const isLocked = playerScores[cat.id] !== null;
-                                const isCurrentTurn = (pIdx === currentPlayer && gameState === GAME_STATE.ENDED);
-                                const potential = potentialScores[cat.id];
-
+                                const isLocked = playerScores[cat.id] !== null
+                                const isCurrentTurn = (pIdx === currentPlayer && gameState === GAME_STATE.ENDED)
+                                const potential = potentialScores[cat.id]
                                 return (
-                                    <td key={pIdx} style={{ padding: '5px', minWidth: '40px' }}>
+                                    <td key={pIdx} className={styles.scoreBox}>
                                         {isLocked ? (
-                                            // 이미 기입된 점수
-                                            <span style={{ fontWeight: 'bold', color: 'black' }}>{playerScores[cat.id]}</span>
+                                            <span className={styles.scoreText}>{playerScores[cat.id]}</span>
                                         ) : isCurrentTurn ? (
-                                            // 현재 턴 플레이어의 기입 가능한 버튼
-                                            <button 
-                                                onClick={() => recordScore(cat.id, potential)}
-                                                style={{ padding: '2px 8px', cursor: 'pointer', backgroundColor: '#e0f7fa', border: '1px solid #00bcd4', borderRadius: '4px', color: '#008ba3', fontWeight: 'bold' }}
-                                            >
+                                            <button className={styles.selectScore} onClick={() => recordScore(cat.id, potential)}>
                                                 {potential}
                                             </button>
                                         ) : (
-                                            // 빈 칸
-                                            <span style={{ color: '#ccc' }}>-</span>
+                                            <span className={styles.blinkText}>-</span>
                                         )}
                                     </td>
                                 )
                             })}
                         </tr>
                     ))}
-
-                    {/* 보너스 및 총점 계산 행 */}
-                    <tr style={{ borderTop: '2px solid black' }}>
-                        <td style={{ padding: '5px', fontWeight: 'bold', color: "#000" }}>Bonus (63+)</td>
+                    <tr className={styles.bonusColumn} id={styles.subTotal}>
+                        <td>SubTotal</td>
                         {scores.map((playerScores, pIdx) => {
-                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0);
-                            const bonus = upperSum >= 63 ? 35 : 0;
-                            return <td key={pIdx} style={{ padding: '5px', fontWeight: 'bold', color: 'gray' }}>{bonus}</td>
+                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
+                            return <td key={pIdx} className={styles.subTotalScore}>{upperSum}/63</td>
                         })}
                     </tr>
-                    <tr>
-                        <td style={{ padding: '5px', fontWeight: 'bold', fontSize: '16px', color: "#000" }}>Total</td>
+                    <tr className={styles.bonusColumn} id={styles.bonus}>
+                        <td>+35 Bonus</td>
                         {scores.map((playerScores, pIdx) => {
-                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0);
-                            const bonus = upperSum >= 63 ? 35 : 0;
-                            const totalScore = Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus;
-                            return <td key={pIdx} style={{ padding: '5px', fontWeight: 'bold', fontSize: '16px', color: 'red' }}>{totalScore}</td>
+                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
+                            const bonus = upperSum >= 63 ? 35 : 0
+                            return <td key={pIdx}>{bonus}</td>
+                        })}
+                    </tr>
+                </tbody>
+                <tbody>
+                    {categories2.map(cat => (
+                        <tr className={styles.categorieColumn} key={cat.id}>
+                            <td className={styles.categorieName}>{cat.name}</td>
+                            {scores.map((playerScores, pIdx) => {
+                                const isLocked = playerScores[cat.id] !== null
+                                const isCurrentTurn = (pIdx === currentPlayer && gameState === GAME_STATE.ENDED)
+                                const potential = potentialScores[cat.id]
+                                return (
+                                    <td key={pIdx} className={styles.scoreBox}>
+                                        {isLocked ? (
+                                            <span className={styles.scoreText}>{playerScores[cat.id]}</span>
+                                        ) : isCurrentTurn ? (
+                                            <button className={styles.selectScore} onClick={() => recordScore(cat.id, potential)}>
+                                                {potential}
+                                            </button>
+                                        ) : (
+                                            <span className={styles.blinkText}>-</span>
+                                        )}
+                                    </td>
+                                )
+                            })}
+                        </tr>
+                    ))}
+                    <tr className={styles.TotalColumn}>
+                        <td className={styles.totalText}>Total</td>
+                        {scores.map((playerScores, pIdx) => {
+                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
+                            const bonus = upperSum >= 63 ? 35 : 0
+                            const totalScore = Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus
+                            return <td key={pIdx} className={styles.totalScore}>{totalScore}</td>
                         })}
                     </tr>
                 </tbody>
@@ -411,7 +433,7 @@ function ScoreBoard() {
     )
 }
 
-function Scene(props){
+function Scene(){
     const startDicePosition = [[0, 5, 0], [0, 5, 1], [0, 5, -1], [1, 5, 0], [-1, 5, 0]]
     return(
         <>
@@ -437,12 +459,12 @@ function Scene(props){
 function LoadingScreen() {
     const { progress } = useProgress()
     return (
-        <div style={{ position: 'absolute', top:0, left:0, width: '100vw', height: '100vh', backgroundColor: '#222', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-            <h1 style={{ color: 'white', marginBottom: '20px' }}>Loading Game...</h1>
-            <div style={{ width: '300px', height: '20px', backgroundColor: '#555', borderRadius: '10px', overflow: 'hidden' }}>
-                <div style={{ width: `${progress}%`, height: '100%', backgroundColor: '#ff5722', transition: 'width 0.2s' }} />
+        <div className={styles.loadingScreen}>
+            <h1 className={styles.loadingText}>Loading Game...</h1>
+            <div className={styles.loadingbar}>
+                <div className={styles.progress} style={{ width: `${progress}%`}} />
             </div>
-            <p style={{ color: 'white', marginTop: '10px' }}>{progress.toFixed(0)}%</p>
+            <p className={styles.progressPercent}>{progress.toFixed(0)}%</p>
         </div>
     )
 }
@@ -468,15 +490,13 @@ export default function YachtDice(){
         const maxScore = Math.max(...totalScores)
         const winners = totalScores.map((score, index) => score === maxScore ? index + 1 : null).filter(val => val !== null)
         if (winners.length > 1) {
-            return (<p>Draw</p>)
+            return (<h2>Draw</h2>)
         } else {
-            return (<p>Player{winners[0]} Win! <br/>{maxScore} Score</p>)
+            return (<h2 className={styles.winner}>Player <span>{winners[0]}</span> Win! <br/><span>({maxScore} Points)</span></h2>)
         }
     }
-
     const { progress } = useProgress()
     const isLoading = progress < 100
-    
     return(
         <div className={styles.canvas}>
             {isLoading && <LoadingScreen />}
@@ -488,11 +508,14 @@ export default function YachtDice(){
             {!isLoading && (
                 <>
                     {gameState === GAME_STATE.GAME_OVER && (
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(0,0,0,0.8)', padding: '40px', borderRadius: '20px', color: 'white', textAlign: 'center', zIndex: 50 }}>
-                            <h3 style={{ color: '#ffdd00', fontSize: '28px', margin: '20px 0', textShadow: '0 0 10px rgba(255,221,0,0.5)' }}>
+                        <div className={styles.gameOverBox}>
+                            <p className={styles.gameOverTitle}>GAME OVER</p>
+                            <div className={styles.gameOverTextBox}>
+                                <span className={styles.winIcon}>🏆</span>
                                 {getWinnerText()}
-                            </h3>
-                            <button onClick={resetToMenu} style={{ padding: '10px 20px', fontSize: '18px', cursor: 'pointer', marginTop: '20px' }}>Reset To Game</button>
+                            </div>
+                            <p className={styles.gameOverText}>모든 라운드가 종료되었습니다.<br />다시 한 판 어떠신가요?</p>
+                            <button className={styles.resetBtn} onClick={resetToMenu}>Play Again</button>
                         </div>
                     )}
                     {gameState !== GAME_STATE.MENU && (

@@ -167,52 +167,209 @@ html, body{font-family : Roboto; margin: 0;}
     right: 0;
 }
 .scoreArea{
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.9);
+    min-width: 300px;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 15px;
     border-radius: 10px;
-    width: 200px;
-    color: #000;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 10px;
 }
 .scoreBoardTitle{
     margin: 0 0 10px 0;
     text-align: center;
     font-weight: 700;
+    color: #000;
 }
 .scoreBoard{
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
 }
-.scoreBoardBox{
-    border-bottom: 1px solid #ccc;
+.CategoriColumnTitle{
+    padding: 5px;
+    border: 2px solid black;
+    color: rgb(255, 255, 255);
+    text-align: left;
+    background-color: #000;
+}
+.playerColumnTitle{
+    padding: 5px;
+    border: 2px solid black;
+}
+.categorieColumn{
+    border: 2px solid black;
+    border-bottom: 1px solid black !important;
+    border-top: 0;
+}
+.categorieName{
+    padding: 5px;
+    font-weight: bold;
+    color: rgb(0, 0, 0);
+    text-align: left;
 }
 .scoreCategori{
     padding: 4px;
     font-weight: 500;
 }
-.categoriBox{
+.scoreBox{
     padding: 4px;
+    min-width: 55px;
+    height: 23px;
+    border: 2px solid black;
+    border-top: 0;
+    border-bottom: 0;
+}
+.scoreText{
+    font-size: 18px;
+    font-weight: 700;
+    color: black;
+}
+.categoriBox{
     text-align: right;
 }
-.score{
-    color: black;
-    font-weight: 500;
-}
-.blinkBox{
-    background-color: #e0f7fa;
-    border: 1px solid #00bcd4;
+.selectScore{
+    padding: 2px 8px;
     cursor: pointer;
-    border-radius: 4px;
-    width: 30px;
+    font-weight: 600;
+    width: 100%;
+    color: gray;
+    background-color: rgba(179, 179, 179, 0);
+    border: 0;
 }
-.nullBox{
+.selectScore:hover{
+    color: #000;
+}
+.blinkText{
     color: #ccc;
+}
+.bonusColumn td{
+    padding: 5px;
+    background-color: #a8a8a8;
+    border: 2px solid #000;
+    border-bottom: 0;
+    border-top: 0;
+}
+.scoreBoard tbody:last-child{
+    border-top: 2px solid #000;
+}
+.bonusColumn td:first-child{
+    font-size: 16px;
+    text-align: left;
+    background-color: #000;
+    color: #ffffff;
+}
+#subTotal{
+    border-top: 2px solid #000;
+    border-bottom: 2px dotted #ffffff;
+}
+#bonus{
+    border-top: 0;
+}
+.subTotalScore{
+    color: #ffffff;
+}
+.TotalColumn td{
+    border: 2px solid #000;
+    background-color: #a8a8a8;
+    color: #fff;
+}
+.totalText{
+    padding: 5px;
+    background-color: #000 !important;
+    font-weight: bold;
+    font-size: 28px;
+    text-align: left;
+}
+.totalScore{
+    padding: 5px;
+    font-weight: bold;
+    font-size: 28px;
 }
 .inSceneBoard{
     position: absolute;
     top: 20px;
     left: 20px;
     z-index: 10;
+}
+.gameOverBox{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(5px);
+    padding: 50px 60px;
+    border-radius: 24px;
+    color: white;
+    text-align: center;
+    z-index: 50;
+    box-shadow: rgba(0, 0, 0, 0.6) 0px 12px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    min-width: 350px;
+}
+.gameOverTitle{
+    margin: 0px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: rgb(170, 170, 170);
+    text-transform: uppercase;
+}
+.gameOverTextBox{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.winIcon{
+    font-size: 72px;
+    color: rgb(255, 215, 0);
+    text-shadow: rgba(255, 215, 0, 0.7) 0px 0px 15px;
+}
+.winner{
+    margin: 0px;
+    font-size: 36px;
+    font-weight: 900;
+}
+.winner span:first-child{
+    color: #ffb300;
+}
+.winner span:last-child{
+    margin: 0px;
+    font-size: 24px;
+    font-weight: bold;
+    color: rgb(221, 221, 221);
+}
+.gameOverText{
+    margin: 10px 0px;
+    font-size: 16px;
+    color: rgb(204, 204, 204);
+    line-height: 1.6;
+}
+.resetBtn {
+  --bg: #e74c3c;
+  --text-color: #fff;
+  position: relative;
+  width: 200px;
+  border: none;
+  background: var(--bg);
+  color: var(--text-color);
+  padding: 1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: 0.2s;
+  border-radius: 5px;
+  opacity: 0.8;
+  letter-spacing: 1px;
+  box-shadow: #c0392b 0px 7px 2px, #000 0px 8px 5px;
+}
+.resetBtn:hover {
+  opacity: 1;
+}
+.resetBtn:active {
+  top: 4px;
+  box-shadow: #c0392b 0px 3px 2px,#000 0px 3px 5px;
 }
 .tip{
     position: absolute;
@@ -221,4 +378,37 @@ html, body{font-family : Roboto; margin: 0;}
 }
 .tip img{
     width: 30px;
+}
+.loadingScreen{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #222;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+.loadingText{
+    color: #fff;
+    margin-bottom: 20px;
+}
+.loadingbar{
+    width: 300px;
+    height: 20px;
+    background-color: #555;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress{
+    height: 100%;
+    background-color: #A3DE83;
+    transition: width 0.2s;
+}
+.progressPercent{
+    color: #fff;
+    margin-top: 10px;
 }
