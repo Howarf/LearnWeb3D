@@ -65,6 +65,7 @@ function Dice({index, ...props}){
     }, [hovered])
 
     useEffect(() => {
+        let timerId
         if(gameState === GAME_STATE.GAME_OVER && rigidRef.current){
             rigidRef.current.setTranslation({
                 x: props.position[0], 
@@ -73,9 +74,7 @@ function Dice({index, ...props}){
             }, true)
             rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
             rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
-            setTimeout(() => {
-                setPhysicsType("dynamic")
-            }, 100)
+            timerId = setTimeout(() => {setPhysicsType("dynamic")}, 100)
             rigidRef.current.wakeUp()
         }else if(gameState === GAME_STATE.READY && !isFixed && rigidRef.current){
             setPhysicsType("dynamic")
@@ -83,7 +82,7 @@ function Dice({index, ...props}){
             rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
             rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
             rigidRef.current.wakeUp()
-            setTimeout(() => {
+            timerId = setTimeout(() => {
                 if (rigidRef.current && gameState === GAME_STATE.READY) {
                     rigidRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
                     rigidRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true)
@@ -92,7 +91,7 @@ function Dice({index, ...props}){
         }else if(gameState === GAME_STATE.THROWN && !isFixed && rigidRef.current){
             setPhysicsType("dynamic")
             rigidRef.current.wakeUp()
-            setTimeout(()=>{
+            timerId = setTimeout(()=>{
                 rigidRef.current.applyImpulse({
                     x: -13 - Math.random() * 2, 
                     y: -2,
@@ -104,6 +103,9 @@ function Dice({index, ...props}){
             }, 200)
         }else if(gameState === GAME_STATE.ENDED || gameState === GAME_STATE.RETURNING || gameState === GAME_STATE.GAME_OVER){
             setPhysicsType("kinematicPosition")
+        }
+        return () =>{
+            if(timerId) clearTimeout(timerId)
         }
     }, [gameState, isFixed])
 
@@ -300,7 +302,7 @@ function Panel(props){
 }
 
 function calculatePotentialScores(dice){
-    if (dice.includes(null) || dice.length !== 5) return
+    if (dice.includes(null) || dice.length !== 5) return {}
     const counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
     let sum = 0
     dice.forEach(d => {
@@ -460,7 +462,7 @@ function Scene(){
             <directionalLight 
                 position={[2.5, 10, 5]} intensity={2} shadow-bias={-0.0001} 
                 shadow-camera-left={-50} shadow-camera-right={50} shadow-camera-top={50} shadow-camera-bottom={-50}
-                shadow-mapSize={[2024, 2024]} castShadow 
+                shadow-mapSize={[2048, 2048]} castShadow 
             />
             <Physics gravity={[0, -25, 0]}>
                 <Panel position={[0, 0, 0]}/>
