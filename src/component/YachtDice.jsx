@@ -1,6 +1,6 @@
 import { Bounds, Environment, Html, useGLTF, useProgress } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { MeshCollider, Physics, RigidBody } from '@react-three/rapier'
+import { CuboidCollider, MeshCollider, Physics, RigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
 import { getModelUrl } from '../supabaseClient'
 import { useEffect, useState, useMemo, useRef, Suspense } from 'react'
@@ -27,6 +27,8 @@ const fixeDice_P = [
 function Dice({index, ...props}){
     const { scene } = useGLTF(getModelUrl('D6.glb'))
     const clonedScene = useMemo(() => scene.clone(), [scene])
+    const curVec = useMemo(() => new THREE.Vector3(), [])
+    const curQuat = useMemo(() => new THREE.Quaternion(), [])
     const rigidRef = useRef()
     const gameState = useDiceGameStore((state)=> state.gameState)
     const keeps = useDiceGameStore((state) => state.keeps)
@@ -39,12 +41,12 @@ function Dice({index, ...props}){
     const [hovered, setHovered] = useState(false)
     const spacing = 2.0
     const angle = (index / 5) * Math.PI * 2
-    const radius = 0.4
+    const radius = 0.6
     const resultTargetPos = useMemo(() => new THREE.Vector3((index - 2) * spacing, 7.5, 1.5), [index])
     const saveTargetPos = keepOrderIndex !== -1 ? fixeDice_P[keepOrderIndex] : fixeDice_P[0]
     const glassPos = useMemo(() => new THREE.Vector3(
         7 + Math.cos(angle) * radius,
-        3 + index * 0.8, 
+        2 + index * 0.8,
         Math.sin(angle) * radius
     ), [index])
     const glassOffset = useMemo(() => new THREE.Vector3((Math.random() - 0.5) * 1, 0, (Math.random() - 0.5) * 1), [])
@@ -108,9 +110,9 @@ function Dice({index, ...props}){
     useFrame(() => {
         if(!rigidRef.current) return
         const currentPos = rigidRef.current.translation()
-        const curVec = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z)
+        curVec.set(currentPos.x, currentPos.y, currentPos.z)
         const curRot = rigidRef.current.rotation()
-        const curQuat = new THREE.Quaternion(curRot.x, curRot.y, curRot.z, curRot.w)
+        curQuat.set(curRot.x, curRot.y, curRot.z, curRot.w)
         if(isFixed){
             rigidRef.current.setNextKinematicTranslation(curVec.lerp(saveTargetPos, 0.15))
             rigidRef.current.setNextKinematicRotation(curQuat.slerp(savedRot, 0.1))
@@ -188,6 +190,8 @@ function Glass(props){
     const keeps = useDiceGameStore((state) => state.keeps)
     const planeIntersectPoint = useMemo(() => new THREE.Vector3(), [])
     const defualtPos = useMemo(() => new THREE.Vector3(7, 2, 0), [] )
+    const curVec = useMemo(() => new THREE.Vector3(), [])
+    const curQuat = useMemo(() => new THREE.Quaternion(), [])
     const uprightQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0))
     useEffect(() => {
         scene.traverse((child) => {
@@ -197,9 +201,9 @@ function Glass(props){
     useFrame((state) => {
         if(!rigidRef.current) return
         const currentPos = rigidRef.current.translation()
-        const curVec = new THREE.Vector3(currentPos.x, currentPos.y ,currentPos.z)
+        curVec.set(currentPos.x, currentPos.y ,currentPos.z)
         const currentRot = rigidRef.current.rotation()
-        const curQuat = new THREE.Quaternion(currentRot.x, currentRot.y, currentRot.z, currentRot.w)
+        curQuat.set(currentRot.x, currentRot.y, currentRot.z, currentRot.w)
         if(gameState === GAME_STATE.DRAGGING){
             state.raycaster.setFromCamera(state.pointer, state.camera)
             const dragHeight = 5
@@ -272,6 +276,18 @@ function Case(props){
     )
 }
 
+function Boundaries() {
+    return (
+        <RigidBody type="fixed" colliders={false}>
+            <CuboidCollider position={[0, 15, 0]} args={[20, 1, 20]} />
+            <CuboidCollider position={[-5, 5, 0]} args={[1, 10, 20]} />
+            <CuboidCollider position={[12, 5, 0]} args={[1, 10, 20]} />
+            <CuboidCollider position={[0, 5, 8]} args={[20, 10, 1]} />
+            <CuboidCollider position={[0, 5, -8]} args={[20, 10, 1]} />
+        </RigidBody>
+    )
+}
+
 function Panel(props){
     return(
         <RigidBody {...props}>
@@ -306,7 +322,7 @@ function calculatePotentialScores(dice){
         sixes: counts[6] * 6,
         choice: sum,
         fourOfAKind: hasCount(4) ? sum : 0,
-        fullHouse: (getCounts()[0] === 3 && getCounts()[1] === 2) ? sum : 0,
+        fullHouse: (getCounts()[0] === 3 && getCounts()[1] === 2 || getCounts()[0] === 5) ? sum : 0,
         smallStraight: smallStraight ? 30 : 0,
         largeStraight: largeStraight ? 40 : 0,
         yacht: hasCount(5) ? 50 : 0
@@ -321,6 +337,14 @@ function ScoreBoard() {
     const player = useDiceGameStore(state => state.player)
     const currentPlayer = useDiceGameStore(state => state.currentPlayer)
     const potentialScores = gameState === GAME_STATE.ENDED ? calculatePotentialScores(diceValues) : {}
+    const playerTotals = useMemo(() => {
+        return scores.map(playerScores => {
+            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
+            const bonus = upperSum >= 63 ? 35 : 0
+            const totalScore = Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus
+            return { upperSum, bonus, totalScore }
+        })
+    }, [scores])
     const categories = [
         { id: 'aces', name: 'Aces' },
         { id: 'deuces', name: 'Deuces' },
@@ -380,17 +404,14 @@ function ScoreBoard() {
                     ))}
                     <tr className={styles.bonusColumn} id={styles.subTotal}>
                         <td>SubTotal</td>
-                        {scores.map((playerScores, pIdx) => {
-                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
-                            return <td key={pIdx} className={styles.subTotalScore}>{upperSum}/63</td>
+                        {scores.map((_, pIdx) => {
+                            return <td key={pIdx} className={styles.subTotalScore}>{playerTotals[pIdx].upperSum}/63</td>
                         })}
                     </tr>
                     <tr className={styles.bonusColumn} id={styles.bonus}>
                         <td>+35 Bonus</td>
-                        {scores.map((playerScores, pIdx) => {
-                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
-                            const bonus = upperSum >= 63 ? 35 : 0
-                            return <td key={pIdx}>{bonus}</td>
+                        {scores.map((_, pIdx) => {
+                            return <td key={pIdx}>{playerTotals[pIdx].bonus}</td>
                         })}
                     </tr>
                 </tbody>
@@ -420,11 +441,8 @@ function ScoreBoard() {
                     ))}
                     <tr className={styles.TotalColumn}>
                         <td className={styles.totalText}>Total</td>
-                        {scores.map((playerScores, pIdx) => {
-                            const upperSum = ['aces', 'deuces', 'threes', 'fours', 'fives', 'sixes'].reduce((sum, key) => sum + (playerScores[key] || 0), 0)
-                            const bonus = upperSum >= 63 ? 35 : 0
-                            const totalScore = Object.values(playerScores).reduce((sum, val) => sum + (val || 0), 0) + bonus
-                            return <td key={pIdx} className={styles.totalScore}>{totalScore}</td>
+                        {scores.map((_, pIdx) => {
+                            return <td key={pIdx} className={styles.totalScore}>{playerTotals[pIdx].totalScore}</td>
                         })}
                     </tr>
                 </tbody>
@@ -446,6 +464,7 @@ function Scene(){
             />
             <Physics gravity={[0, -25, 0]}>
                 <Panel position={[0, 0, 0]}/>
+                <Boundaries />
                 <Glass position={[7, 2, 0]} scale={13.2} />
                 {startDicePosition.map((el, item) => {
                     return(<Dice position={el} scale={1.75} key={item} index={item}/>)
@@ -497,6 +516,10 @@ export default function YachtDice(){
     }
     const { progress } = useProgress()
     const isLoading = progress < 100
+    useEffect(() => {
+        resetToMenu()
+        return () => {resetToMenu()}
+    }, [resetToMenu])
     return(
         <div className={styles.canvas}>
             {isLoading && <LoadingScreen />}
