@@ -548,10 +548,12 @@ export default function YachtDice(){
                             <p className={styles.turnPlayer}>{currentPlayer + 1}<span>P</span>Turn</p>
                             <p className={styles.turn}>{Math.min(12, turn)}/12</p>
                             <div className={styles.tip}>
-                                {/* {gameState === GAME_STATE.READY && "컵을 잡아 드래그한 뒤 놓으세요!"}
-                                {gameState === GAME_STATE.ENDED && rollCount > 0 && "주사위를 클릭해 킵(Keep)하고, 컵을 클릭하면 다시 던집니다."}
-                                {gameState === GAME_STATE.ENDED && rollCount === 0 && "더 이상 굴릴 수 없습니다. 점수판을 클릭해 기록하세요!"} */}
                                 <img src='tip-icon.png'/>
+                                <div className={styles.tipText}>
+                                    {gameState === GAME_STATE.READY && <p>컵을 잡아 드래그해 주사위를 섞고 마우스를 놓아 주사위를 던지세요!</p>}
+                                    {gameState === GAME_STATE.ENDED && rollCount > 0 && <p>던져진 주사위를 클릭해 킵(Keep)하던, 컵을 클릭해 다시 던져 원하는 주사위를 띄우세요.</p>}
+                                    {gameState === GAME_STATE.ENDED && rollCount === 0 && <p>더 이상 굴릴 수 없습니다. 점수판을 클릭해 기록하세요!</p>}
+                                </div>
                             </div>
                         </div>
                         :(<></>)
