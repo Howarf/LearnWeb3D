@@ -84,6 +84,8 @@ export default function Menu(){
                     <ul className={styles.menuList1} id='menu_3'>
                         <Link to={'/SimpleArkanoid'}><li>간단한 공튀기기</li></Link>
                         <Link to={'/YachtDice'}><li>요트 다이스</li></Link>
+                        <Link to={'/BpmSurvival'}><li>BPM Survival</li></Link>
+                        <Link to={''}><li>줄넘기 게임</li></Link>
                     </ul>
                 </div>
             </div>

@@ -1,0 +1,292 @@
+/* ── 루트 컨테이너 ── */
+.root {
+  width: 100vw;
+  height: 100vh;
+  background: #0d0d1a;
+  position: relative;
+}
+
+/* ── 공통 오버레이 ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "Courier New", monospace;
+  color: #fff;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+/* ── IdleScreen ── */
+.idleTitle {
+  font-size: 48px;
+  letter-spacing: 6px;
+  margin: 0 0 8px;
+  color: #e74c3c;
+  text-shadow: 0 0 20px #e74c3c;
+}
+
+.idleSubtitle {
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 40px;
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+
+.diffLabel {
+  margin-bottom: 12px;
+  letter-spacing: 3px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.diffButtons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.diffButton {
+  padding: 16px 32px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+  line-height: 1.6;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.diffButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.diffButtonActive {
+  background: rgba(52, 152, 219, 0.3);
+  border-color: #3498db;
+  box-shadow: 0 0 16px rgba(52, 152, 219, 0.4);
+}
+
+.diffButtonActiveHard {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: #e74c3c;
+  box-shadow: 0 0 16px rgba(231, 76, 60, 0.4);
+}
+
+.diffDesc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 1px;
+}
+
+.bpmLabel {
+  margin-bottom: 12px;
+  letter-spacing: 3px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bpmButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.bpmButton {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+}
+
+.bpmButtonActive {
+  background: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.customBpm {
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 2px;
+}
+
+.customRange {
+  width: 160px;
+  accent-color: #e74c3c;
+}
+
+.customValue {
+  width: 40px;
+  text-align: right;
+  font-size: 20px;
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.startButton {
+  padding: 14px 52px;
+  font-size: 18px;
+  letter-spacing: 5px;
+  background: #e74c3c;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  box-shadow: 0 0 24px rgba(231, 76, 60, 0.5);
+}
+
+.hint {
+  margin-top: 32px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 2px;
+}
+
+/* ── PlayingHUD ── */
+.hudBpm {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 20;
+  font-family: "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  letter-spacing: 3px;
+}
+
+.hudBpmValue {
+  color: #e74c3c;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.hudScore {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 20;
+  font-family: "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-align: right;
+}
+
+.hudScoreValue {
+  color: #3498db;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.hudHint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-family: "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+
+/* ── BGM 볼륨 컨트롤 (플레이 중 하단 우측) ── */
+.hudVolume {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Courier New", monospace;
+}
+
+.hudVolumeIcon {
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.45);
+  user-select: none;
+}
+  
+.hudVolumeSlider {
+  width: 90px;
+  accent-color: #e74c3c;
+  cursor: pointer;
+}
+
+.hudVolumeValue {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  width: 28px;
+  text-align: right;
+  letter-spacing: 1px;
+}
+
+/* ── DeadScreen ── */
+.deadTitle {
+  font-size: 52px;
+  letter-spacing: 6px;
+  margin: 0 0 8px;
+  color: #e74c3c;
+  text-shadow: 0 0 30px #e74c3c;
+}
+
+.deadBpm {
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 40px;
+  letter-spacing: 3px;
+  font-size: 13px;
+}
+
+.survivedLabel {
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 0 8px;
+}
+
+.survivedScore {
+  font-size: 56px;
+  margin: 0 0 48px;
+  color: #3498db;
+  text-shadow: 0 0 20px #3498db;
+  font-weight: bold;
+}
+
+.retryButton {
+  padding: 14px 52px;
+  font-size: 18px;
+  letter-spacing: 5px;
+  background: transparent;
+  border: 2px solid #e74c3c;
+  border-radius: 8px;
+  color: #e74c3c;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+  transition: background 0.15s, color 0.15s;
+}
+
+.retryButton:hover {
+  background: #e74c3c;
+  color: #fff;
+}
