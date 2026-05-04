@@ -1,0 +1,45 @@
+.main{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: sans-serif;
+}
+.headerIcon{
+    font-size: 48px;
+    margin-bottom: 24px;
+}
+.headerText{
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+.mainText{
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 320px;
+    margin-bottom: 32px;
+    color: #ccc;
+}
+.inductionLink{
+    padding: 16px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #999;
+    word-break: break-all;
+    max-width: 320px;
+}
+.inductionText{
+    margin-bottom: 8px;
+    color: #ccc;
+}
+.Link{
+    margin-top: 24px;
+    font-size: 14px;
+    color: #4a9eff;
+}

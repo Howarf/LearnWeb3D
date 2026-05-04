@@ -21,6 +21,10 @@ import YachtDice from './component/YachtDice';
 import BpmSurvival from './component/BpmSurvival';
 
 function App() {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  if(isMobile){
+    return <MobileNotice />
+  }
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
       <div className='App'>
