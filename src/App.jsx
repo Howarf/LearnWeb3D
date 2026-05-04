@@ -1,4 +1,4 @@
-import { Route, BrowserRouter, Routes } from 'react-router-dom';
+import { Route, BrowserRouter, Routes, HashRouter } from 'react-router-dom';
 import Menu from './component/menu';
 import Home from './component/home';
 import Cube from './component/cube';
@@ -22,7 +22,7 @@ import BpmSurvival from './component/BpmSurvival';
 
 function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
+    <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
       <div className='App'>
           <Menu/>
           <Routes>
@@ -46,7 +46,7 @@ function App() {
               <Route path='/#/BpmSurvival' element={<BpmSurvival />} />
           </Routes>
       </div>
-  </BrowserRouter>
+  </HashRouter>
   )
 }
 
