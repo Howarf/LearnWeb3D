@@ -1,4 +1,4 @@
-import { Route, BrowserRouter, Routes, HashRouter } from 'react-router-dom';
+import { Route, BrowserRouter, Routes } from 'react-router-dom';
 import Menu from './component/menu';
 import Home from './component/home';
 import Cube from './component/cube';
@@ -22,7 +22,7 @@ import BpmSurvival from './component/BpmSurvival';
 
 function App() {
   return (
-    <HashRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
+    <BrowserRouter basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true }}>
       <div className='App'>
           <Menu/>
           <Routes>
@@ -42,11 +42,11 @@ function App() {
               <Route path='/MyPhysics' element={<MyPhysics />} />
               <Route path='/RollTheDice' element={<RollTheDice />} />
               <Route path='/FlowCamera' element={<FlowCamera />} />
-              <Route path='/#/YachtDice' element={<YachtDice />} />
-              <Route path='/#/BpmSurvival' element={<BpmSurvival />} />
+              <Route path='/YachtDice' element={<YachtDice />} />
+              <Route path='/BpmSurvival' element={<BpmSurvival />} />
           </Routes>
       </div>
-  </HashRouter>
+  </BrowserRouter>
   )
 }
 
