@@ -42,8 +42,8 @@ function App() {
               <Route path='/MyPhysics' element={<MyPhysics />} />
               <Route path='/RollTheDice' element={<RollTheDice />} />
               <Route path='/FlowCamera' element={<FlowCamera />} />
-              <Route path='/YachtDice' element={<YachtDice />} />
-              <Route path='/BpmSurvival' element={<BpmSurvival />} />
+              <Route path='/#/YachtDice' element={<YachtDice />} />
+              <Route path='/#/BpmSurvival' element={<BpmSurvival />} />
           </Routes>
       </div>
   </BrowserRouter>

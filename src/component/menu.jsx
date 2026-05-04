@@ -76,7 +76,7 @@ export default function Menu(){
                         <Link to={'/CollisionEvent'}><li>충돌 이벤트</li></Link>
                         <Link to={'/MyPhysics'}><li>동전 먹기</li></Link>
                         <Link to={'/FlowCamera'}><li>따라가는 카메라</li></Link>
-                        {/* <Link to={'/RollTheDice'}><li>주사위 굴리기</li></Link> */}
+                        <Link to={'/RollTheDice'}><li>주사위 굴리기</li></Link>
                     </ul>
                 </div>
                 <span className={styles.subTitle1} onClick={MenuClick2} name="menu_3">게임</span>
@@ -85,7 +85,6 @@ export default function Menu(){
                         <Link to={'/SimpleArkanoid'}><li>간단한 공튀기기</li></Link>
                         <Link to={'/YachtDice'}><li>요트 다이스</li></Link>
                         <Link to={'/BpmSurvival'}><li>BPM Survival</li></Link>
-                        <Link to={''}><li>줄넘기 게임</li></Link>
                     </ul>
                 </div>
             </div>
